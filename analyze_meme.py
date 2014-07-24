@@ -19,7 +19,7 @@ if "TOPOGRAM_TMP_PATH" in os.environ:
     tmp_path=os.environ.get('TOPOGRAM_TMP_PATH')
 else: tmp_path='/tmp'
 
-results_path="/home/clemsos/Dev/mitras/results/"
+results_path=tmp_path
 
 # Connect to Mongo
 collection="memes"
@@ -77,8 +77,8 @@ for meme_name in meme_names:
     print "Processing meme '%s'"%meme_name
 
     # files names
-    meme_path=outfile=results_path+meme_name
-    meme_csv=meme_path+"/"+meme_name+".csv"
+    meme_path=outfile=os.path.join(results_path,meme_name)
+    meme_csv=os.path.join(meme_path,meme_name)+".csv"
 
     jsondata={}
     jsondata["meme_name"]=meme_name
@@ -531,4 +531,4 @@ for meme_name in meme_names:
 
     db[collection].insert(meme)
 
-    print "data saved to %s collection on mongodb"%collection
+    print "data saved to %s collection on mongodb"%collections
