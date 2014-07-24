@@ -1,12 +1,14 @@
 # Topogram Miner
 
-## Specs
+Requirements : 
 
-Python
+    * elasticsearch index
+    * python 2.7 
 
-    * should receive query from kibana
-    * should send query to elasticsearch
-    * should process the data
-    * should save the results
+Workflow :
 
-Documentation with http://fitzgen.github.io/pycco/
+    * receive query from kibana
+    * send query to elasticsearch
+    * save data to tmp CSV
+    * process tmp CSV
+    * save the results to MongoDB

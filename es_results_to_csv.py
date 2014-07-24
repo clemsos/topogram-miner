@@ -1,11 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import unicodedata
 import csv
 import os
 import elasticsearch
 
-es = elasticsearch.Elasticsearch(["localhost:9200"])
+# write path and files
+if "TOPOGRAM_TMP_PATH" in os.environ:
+    tmp_path=os.environ.get('TOPOGRAM_TMP_PATH')
+else: tmp_path='/tmp'
+
+results_path=os.path.join(tmp_path,meme_name)
+
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
+csv_file=os.path.join(results_path,meme_name+".csv")
+log_file=os.path.join(results_path,meme_name+".log")
+
+
+# elasticsearch
+if "TOPOGRAM_ES_HOST" in os.environ:
+    es_host=os.environ.get('TOPOGRAM_ES_HOST')
+else: es_host='localhost:9200'
+
+es = elasticsearch.Elasticsearch([es_host])
+
+# TODO : this should be passed as a dict
+# meme={indexes:[],query:{},name:{}}
 
 # Setup your variables
 indexes_names=[
@@ -20,25 +42,11 @@ indexes_names=[
 meme_name="ls58"
 meme_keywords=["未来"]
 
-
-results_path="/home/clemsos/Dev/mitras/results/"+meme_name
-
-# write path and files
-if not os.path.exists(results_path):
-    os.makedirs(results_path)
-csv_file=results_path+"/"+meme_name+".csv"
-log_file=results_path+"/"+meme_name+".log"
-
-
-# ES : config
-chunksize=1000
-
 # ES : Build query
 meme_query=""
 for i,k in enumerate(meme_keywords):
     meme_query+='\"'+k+'\"'
     if i+1 < len(meme_keywords): meme_query+= " OR "
-
 
 query={ "query": {
         "query_string": {
@@ -46,6 +54,9 @@ query={ "query": {
          }
       }
     }
+
+# Chunk size to write CSV rows in file
+chunksize=1000
 
 # Open a csv file and write the stuff inside
 with open(csv_file, 'wb') as csvfile: 
@@ -98,7 +109,5 @@ with open(csv_file, 'wb') as csvfile:
             logfile.write("%.01f %% %d Hits Retreived - fiability %.3f \n" % (per,chunk, res['hits']['hits'][0]["_score"]) )
             logfile.write("Done. Data saved in %s \n"%csv_file)
 
-
 print "Done. Data saved in %s"%csv_file
 print "Log is stored at %s"%log_file
-

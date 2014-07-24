@@ -5,21 +5,26 @@ import os, csv, json
 from time import time 
 import datetime
 from collections import Counter
-import lib.tweetminer as minetweet
-from lib.users import UserAPI
 import networkx as nx
 import community
-from lib.nlp import NLPMiner
 import locale
+
+import lib.tweetminer as minetweet
+from lib.users import UserAPI
+from lib.nlp import NLPMiner
 from lib.mongo import MongoDB
 
-results_path="/home/clemsos/Dev/mitras/results/"
+# 
+if "TOPOGRAM_TMP_PATH" in os.environ:
+    tmp_path=os.environ.get('TOPOGRAM_TMP_PATH')
+else: tmp_path='/tmp'
 
+results_path="/home/clemsos/Dev/mitras/results/"
 
 # Connect to Mongo
 collection="memes"
 db=MongoDB("weibodata").db
-# count = db[collection].count()
+
 
 # meme_names=[ meme for meme in os.listdir(results_path) if meme[-3:] != "csv"]
 # meme_names=[
