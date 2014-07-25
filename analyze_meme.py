@@ -70,7 +70,11 @@ def get_province(_userid):
     except KeyError :
         return 0
 
-for meme_name in meme_names:
+def test_com(meme_id):
+    print meme_id
+
+
+def analyze_meme(meme_name):
 
     # Init
     # tstart=time()
