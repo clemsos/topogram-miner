@@ -1,3 +1,4 @@
 git+https://github.com/slacy/minimongo.git#egg=minimongo
 elasticsearch
 zerorpc
+pyzmq
