@@ -3,4 +3,4 @@ elasticsearch
 zerorpc
 pyzmq
 networkx
-git+https://bitbucket.org/taynaud/python-louvain#egg=community
+python-louvain
