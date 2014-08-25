@@ -34,5 +34,3 @@ The miner is now ready to receive information from the UI (see [topogram-ui](htt
     * elasticsearch index
     * python 2.7 
     * mongoDB
-
-### How it works
