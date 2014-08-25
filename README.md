@@ -12,12 +12,14 @@ The miner is now ready to receive information from the UI (see [topogram-ui](htt
 
 ## Spec
 
+**Solutions**
+
 * Indexing : elasticsearch.  
 * Data mining : python
 * Storage fo result : MongoDB
 * Communication with Node server : RPC Python
 
-Features 
+**Features**
 
 * plain-text search engine (elasticsearch)
 * conversational grapĥ (RT, @, comment)
