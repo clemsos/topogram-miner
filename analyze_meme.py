@@ -14,39 +14,6 @@ from lib.users import UserAPI
 from lib.nlp import NLPMiner
 from lib.mongo import MongoDB
 
-# 
-if "TOPOGRAM_TMP_PATH" in os.environ:
-    tmp_path=os.environ.get('TOPOGRAM_TMP_PATH')
-else: tmp_path='/tmp'
-
-results_path=tmp_path
-
-# Connect to Mongo
-collection="memes"
-db=MongoDB("weibodata").db
-
-
-# meme_names=[ meme for meme in os.listdir(results_path) if meme[-3:] != "csv"]
-# meme_names=[
- # 'biaoge',
- # 'thevoice',
- # 'hougong',
- # 'gangnam',
- # 'sextape',
- # 'dufu',
- # 'moyan',
- # 'ccp',
- # 'yuanfang',
- # 'qiegao']
-
-meme_names=[
- # 'tuhao',
- # 'diaosi'
- "ls58"
-]
-# meme_names=['biaoge']
-print meme_names
-
 t0=time()
 minetweet.init_tweet_regex()
 
@@ -73,17 +40,25 @@ def get_province(_userid):
 def test_com(meme_id):
     print meme_id
 
+# Connect to Mongo
+db=MongoDB("weibodata").db
 
-def analyze_meme(meme_name):
+def analyze_meme(meme_id,collection):
 
     # Init
-    # tstart=time()
-    print "Processing meme '%s'"%meme_name
+    tstart=time()
+
+    # get the data
+    memes=db[collection]
+    meme=memes.find_one({"_id": meme_id})
+
+    meme_name=meme["name"]
 
     # files names
-    meme_path=outfile=os.path.join(results_path,meme_name)
-    meme_csv=os.path.join(meme_path,meme_name)+".csv"
+    # meme_path=outfile=os.path.join(results_path,meme_name)
+    # meme_csv=os.path.join(meme_path,meme_name)+".csv"
 
+    print "Processing meme '%s'"%meme_name
     jsondata={}
     jsondata["meme_name"]=meme_name
 
@@ -98,18 +73,14 @@ def analyze_meme(meme_name):
     by_time={}
     print "processing tweets..."
     
-    # process the data
-    with open(meme_csv, 'rb') as csvfile:
-        memecsv=csv.reader(csvfile)
-        memecsv.next() # skip headers
-
-        for row in memecsv:
+    print meme["messages"][0]
+    for row in meme["messages"]:
             # extract text
-            t=row[1]    
+            t=row["text"].encode("utf-8") 
             tweets_count+=1
             
             # time (round and store)
-            d=datetime.datetime.strptime(row[9], "%Y-%m-%dT%H:%M:%S")
+            d=datetime.datetime.strptime(row["created_at"], "%Y-%m-%dT%H:%M:%S")
             day = datetime.datetime(d.year,d.month,d.day,d.hour,0,0) # round to hour
             # day = datetime.datetime(d.year,d.month,d.day,0,0,0) # round to day
             timestamp=day.strftime("%s")
@@ -121,15 +92,15 @@ def analyze_meme(meme_name):
             user_diff=[]
             users_to_users=[]
             for mention in mentions:
-                users_to_users.append((row[0],mention))
+                users_to_users.append((row["uid"],mention))
                 # user_edges_time.append((row[0],mention,timestamp))
                 if mention not in user_diff : user_diff.append(mention)
 
                 # retweeted_uid
-            if row[7] != "" : 
-                users_to_users.append((row[7],row[0]))
+            if row["retweeted_uid"] != None : 
+                users_to_users.append((row["retweeted_uid"],row["uid"]))
                 # user_edges_time.append((row[7],row[0],timestamp))
-                if row[7] not in user_diff : user_diff.append(row[7])
+                if row["retweeted_uid"] not in user_diff : user_diff.append(row["retweeted_uid"])
             
             users_edges+=users_to_users # store all users interactions
             users+=user_diff # store all users
@@ -227,6 +198,7 @@ def analyze_meme(meme_name):
 
     for user in top_users:
         province=get_province(user)
+        # print province
         user_provinces[user]=province
         try : provinces_stats[province]
         except KeyError: provinces_stats[province]=0
@@ -237,6 +209,7 @@ def analyze_meme(meme_name):
                                 "label": p,
                                 "count":provinces_stats[p]
                                 } for p in provinces_stats]
+    print users_by_provinces_stats
 
     # User graph info
     print "USER GRAPH"
@@ -258,7 +231,8 @@ def analyze_meme(meme_name):
     edges_weighted=[
             str(p[0][0]+" "+p[0][1]+" "+str(p[1])) 
             for p in Counter(top_users_edges).most_common(users_edges_limit) 
-            if p[1] > users_minimum_exchange] 
+            if p[1] > users_minimum_exchange
+            ] 
 
     print "Weighted edges %d"%len(edges_weighted)
 
@@ -517,22 +491,15 @@ def analyze_meme(meme_name):
                     
         timeframes.append({"time":_time, "data":timeframe, "count":tf["count"]})
 
+    # print " %d timeframes"%len(timeframes)
+    # timeframes_file=meme_path+"/"+meme_name+"_timeframes.json"
 
-    print " %d timeframes"%len(timeframes)
-    timeframes_file=meme_path+"/"+meme_name+"_timeframes.json"
+    # with open(timeframes_file, 'w') as outfile:
+    #     json.dump(timeframes, outfile)
+    #     print "json data have been saved to %s"%(timeframes_file)
 
-    with open(timeframes_file, 'w') as outfile:
-        json.dump(timeframes, outfile)
-        print "json data have been saved to %s"%(timeframes_file)
 
-    meme={
-        "name":meme_name,
-        "data":timeframes,
-        "tweets_count":tweets_count,
-        "geoclusters": provinces_communities,
-        "provincesCount":users_by_provinces_stats
-        }
+    db[collection].update({'_id':meme_id},{'$set':{"timeframes":timeframes, "geoclusters": provinces_communities,"provincesCount":users_by_provinces_stats }})
 
-    db[collection].insert(meme)
-
-    print "data saved to %s collection on mongodb"%collections
+    return
+    # print "data saved to %s collection on mongodb"%collections
