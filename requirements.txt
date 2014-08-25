@@ -4,3 +4,5 @@ zerorpc
 pyzmq
 networkx
 python-louvain
+jieba
+csv

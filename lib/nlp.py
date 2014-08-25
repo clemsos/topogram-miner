@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import ner
+# import ner
 import jieba # import mmseg
 import jieba.analyse
 from os import path
@@ -25,7 +25,7 @@ class NLPMiner:
 
         print "init NLP toolkit"
 
-        self.tagger = ner.SocketNER(host='localhost', port=1234)
+        # self.tagger = ner.SocketNER(host='localhost', port=1234)
 
         # parse list of stopwords
         self.stoplist=[i.strip() for i in open(stopwords_file)]
@@ -49,10 +49,10 @@ class NLPMiner:
         txt_wo_stopwords=[w for w in txt if w.encode('utf-8') not in self.stoplist and w.encode('utf-8') !=" "]
         return txt_wo_stopwords
 
-    def extract_named_entities_from_dico(self,dico):
-        # prepare Chinese seg for ENR
-        # TODO : remove punctuation / stopwords ".","[","]",etc.
-        seg_str=" ".join(dico)
-        # get all entities 
-        tags= self.tagger.get_entities(seg_str)
-        return tags
+    # def extract_named_entities_from_dico(self,dico):
+    #     # prepare Chinese seg for ENR
+    #     # TODO : remove punctuation / stopwords ".","[","]",etc.
+    #     seg_str=" ".join(dico)
+    #     # get all entities 
+    #     tags= self.tagger.get_entities(seg_str)
+    #     return tags
