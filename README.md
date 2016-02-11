@@ -1,3 +1,6 @@
+
+> This project has moved to https://github.com/topogram/topogram 
+
 # Topogram Miner
 
 ``Topogram Miner`` is a toolset to select and analyze large amounts of tweets. 
